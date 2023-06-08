@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 
 const port = process.env.PORT || 5000;
@@ -33,7 +33,33 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const database = client.db("schoolUserDB").collection("users");
+    const usersCollection = client.db("UserDB").collection("users");
+    const classCollection = client.db("classDB").collection("classes");
+
+    app.get("/users", async (req, res) => {
+      const allUser = {};
+      const result = await usersCollection.find(allUser).toArray();
+      res.send(result);
+    });
+
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          email: user,
+        },
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+    app.post("/addAClass", async (req, res) => {});
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
