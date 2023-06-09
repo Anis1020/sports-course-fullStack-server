@@ -35,7 +35,29 @@ async function run() {
 
     const usersCollection = client.db("UserDB").collection("users");
     const classCollection = client.db("classDB").collection("classes");
+    const selectedClassCollection = client
+      .db("selectedClassDB")
+      .collection("selectedClass");
+    // selected class touter
+    app.get("/selectedClass", async (req, res) => {
+      const selectedClass = req.body;
+      const result = await selectedClassCollection
+        .find(selectedClass)
+        .toArray();
+      res.send(result);
+    });
+    app.post("/selectedClass", async (req, res) => {
+      const body = req.body;
+      const filter = { _id: body._id }; //body._id
+      const existingClass = await selectedClassCollection.findOne(filter);
+      if (existingClass) {
+        res.send("you have already added this class");
+      }
+      const result = await selectedClassCollection.insertOne(body);
+      res.send(result);
+    });
 
+    // allClass related touter
     app.get("/allClass", async (req, res) => {
       const allClass = {};
       const result = await classCollection.find(allClass).toArray();
