@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
+require("dotenv").config();
+const jwt = require("jsonwebtoken");
 
 const port = process.env.PORT || 5000;
 require("dotenv").config();
@@ -14,7 +16,22 @@ const corsConfig = {
 app.use(cors(corsConfig));
 app.use(express.json());
 
-// db userpass SchoolProjects
+const verifyJWT = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(402).send({ error: true, massage: "unauthorize access" });
+  }
+  const token = authorization.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res
+        .status(401)
+        .send({ error: true, massage: "unauthorize access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+};
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jferds9.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -37,6 +54,15 @@ async function run() {
     const selectedClassCollection = client
       .db("selectedClassDB")
       .collection("selectedClass");
+
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+
+      res.send(token);
+    });
     // selected class touter
     app.get("/selectedClass", async (req, res) => {
       const selectedClass = req.body;
@@ -62,7 +88,7 @@ async function run() {
       const result = await classCollection.find(allClass).toArray();
       res.send(result);
     });
-
+    // user related router
     app.get("/users", async (req, res) => {
       const allUser = {};
       const result = await usersCollection.find(allUser).toArray();
