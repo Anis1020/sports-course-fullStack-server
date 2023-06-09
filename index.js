@@ -41,12 +41,18 @@ async function run() {
       const result = await classCollection.find(allClass).toArray();
       res.send(result);
     });
+
     app.get("/users", async (req, res) => {
       const allUser = {};
       const result = await usersCollection.find(allUser).toArray();
       res.send(result);
     });
-
+    app.get("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
       const user = req.body;
