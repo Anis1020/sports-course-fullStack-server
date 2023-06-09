@@ -99,6 +99,13 @@ async function run() {
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+    // delete user route
+    app.delete("/deleteUser/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await usersCollection.deleteOne(filter);
+      res.send(result);
+    });
 
     app.post("/addAClass", async (req, res) => {
       const body = req.body;
