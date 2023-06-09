@@ -36,6 +36,11 @@ async function run() {
     const usersCollection = client.db("UserDB").collection("users");
     const classCollection = client.db("classDB").collection("classes");
 
+    app.get("/allClass", async (req, res) => {
+      const allClass = {};
+      const result = await classCollection.find(allClass).toArray();
+      res.send(result);
+    });
     app.get("/users", async (req, res) => {
       const allUser = {};
       const result = await usersCollection.find(allUser).toArray();
@@ -59,7 +64,11 @@ async function run() {
       );
       res.send(result);
     });
-    app.post("/addAClass", async (req, res) => {});
+    app.post("/addAClass", async (req, res) => {
+      const body = req.body;
+      const result = await classCollection.insertOne(body);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
