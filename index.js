@@ -53,23 +53,31 @@ async function run() {
       const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
-    app.put("/users/:email", async (req, res) => {
-      const email = req.params.email;
+
+    app.post("/users", async (req, res) => {
       const user = req.body;
-      const filter = { email: email };
-      const options = { upsert: true };
-      const updateDoc = {
-        $set: {
-          email: user,
-        },
-      };
-      const result = await usersCollection.updateOne(
-        filter,
-        updateDoc,
-        options
-      );
+      const filter = { email: user.email };
+      const existingUser = await usersCollection.findOne(filter);
+      if (existingUser) {
+        return res.send({ massage: "user already exist" });
+      }
+      const result = await usersCollection.insertOne(user);
       res.send(result);
     });
+
+    // user role route
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     app.post("/addAClass", async (req, res) => {
       const body = req.body;
       const result = await classCollection.insertOne(body);
