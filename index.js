@@ -11,7 +11,7 @@ require("dotenv").config();
 const corsConfig = {
   origin: "*",
   credentials: true,
-  methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
 };
 app.use(cors(corsConfig));
 app.use(express.json());
@@ -47,7 +47,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const usersCollection = client.db("UserDB").collection("users");
     const classCollection = client.db("classDB").collection("classes");
@@ -91,16 +91,23 @@ async function run() {
     // user related router
     app.get("/users", async (req, res) => {
       const allUser = {};
+      // console.log(allUser);
       const result = await usersCollection.find(allUser).toArray();
       res.send(result);
     });
-    app.get("/user/:id", async (req, res) => {
+    app.get("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
+    // get user base on role
+    app.get("/instructor", async (req, res) => {
+      const body = req.body;
+      console.log(body);
+    });
 
+    // save user in db and save dublication
     app.post("/users", async (req, res) => {
       const user = req.body;
       const filter = { email: user.email };
@@ -116,6 +123,9 @@ async function run() {
     app.patch("/users/admin/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
+      // const email = req.params.email;
+      // const filter = { email: email };
+      // const options = { upsert: true }; na thakle add kore
       const updateDoc = {
         $set: {
           role: "admin",
@@ -124,7 +134,23 @@ async function run() {
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-    // delete user route
+
+    app.patch("/users/instructor/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      // const email = req.params.email;
+      // const filter = { email: email };
+      // const options = { upsert: true }; na thakle add kore
+      const updateDoc = {
+        $set: {
+          role: "instructor",
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // delete user related route
     app.delete("/deleteUser/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
