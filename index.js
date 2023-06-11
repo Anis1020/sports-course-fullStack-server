@@ -81,6 +81,13 @@ async function run() {
       const result = await selectedClassCollection.insertOne(body);
       res.send(result);
     });
+    app.delete("/classDelete/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const result = await selectedClassCollection.deleteOne(body, filter);
+      res.send(result);
+    });
 
     // allClass related touter
     app.get("/allClass", async (req, res) => {
@@ -153,8 +160,9 @@ async function run() {
     // delete user related route
     app.delete("/deleteUser/:id", async (req, res) => {
       const id = req.params.id;
+      const body = req.body;
       const filter = { _id: new ObjectId(id) };
-      const result = await usersCollection.deleteOne(filter);
+      const result = await usersCollection.deleteOne(body, filter);
       res.send(result);
     });
 
