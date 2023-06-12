@@ -51,6 +51,7 @@ async function run() {
 
     const usersCollection = client.db("UserDB").collection("users");
     const classCollection = client.db("classDB").collection("classes");
+    const paymentCollection = client.db("paymentDB").collection("payment");
     const selectedClassCollection = client
       .db("selectedClassDB")
       .collection("selectedClass");
@@ -63,12 +64,19 @@ async function run() {
 
       res.send(token);
     });
-    // selected class touter
+    // selected class router
     app.get("/selectedClass", async (req, res) => {
       const selectedClass = req.body;
       const result = await selectedClassCollection
         .find(selectedClass)
         .toArray();
+      res.send(result);
+    });
+    app.get("/singleCls/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const result = await selectedClassCollection.findOne(body, filter);
       res.send(result);
     });
     app.post("/selectedClass", async (req, res) => {
@@ -86,6 +94,24 @@ async function run() {
       const body = req.body;
       const filter = { _id: new ObjectId(id) };
       const result = await selectedClassCollection.deleteOne(body, filter);
+      res.send(result);
+    });
+
+    // payment related router
+    app.get("/enrolledCls", async (req, res) => {
+      const enrolledCls = {};
+      const result = await paymentCollection.find(enrolledCls).toArray();
+      res.send(result);
+    });
+
+    app.post("/payment", async (req, res) => {
+      const body = req.body;
+      const filter = { _id: body._id };
+      const existingPayment = await paymentCollection.findOne(filter);
+      if (existingPayment) {
+        res.send("you have already parses this product");
+      }
+      const result = await paymentCollection.insertOne(body);
       res.send(result);
     });
 
